@@ -5,7 +5,7 @@ import numpy as np
 import json
 import os
 import asyncio
-
+import re
 
 
 PLUGIN_DIR=os.path.dirname(__file__)
@@ -23,7 +23,8 @@ class MyPlugin(Star):
     # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("添加帮助")
-    async def add_help(self,event,hk:str,hv:str):
+    async def add_help(self,event,hk:str):
+        from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
         data_dic={}
         with open(f"{DATA_DIR}","r",encoding="utf-8") as f:
             data_dic=json.load(f)
@@ -31,7 +32,12 @@ class MyPlugin(Star):
         if hk in data_dic:
             yield event.plain_result(f"已有该条目，无法重复创建")
         else:
-            data_dic[hk]="hv"
+            massage_list=event.message_str
+            pattern = r'(?:\s.*?){2}(.*)'
+            help = re.search(pattern, massage_list)
+
+            massage=help.group(1)
+            data_dic[hk]=massage
             with open(f"{DATA_DIR}","w",encoding="utf-8") as f:
                 data_j=json.dumps(data_dic,ensure_ascii=False)
                 f.write(data_j)
@@ -41,7 +47,7 @@ class MyPlugin(Star):
     
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("删除帮助")
-    async def del_player(self,event,hk:str):
+    async def del_help(self,event,hk:str):
         data_dic={}
         with open(f"{DATA_DIR}","r",encoding="utf-8") as f:
             data_dic=json.load(f)
@@ -58,7 +64,7 @@ class MyPlugin(Star):
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("修改帮助")
-    async def del_player(self,event,hk:str,nhv:str):
+    async def fix_help(self,event,hk:str,nhv:str):
         data_dic={}
         with open(f"{DATA_DIR}","r",encoding="utf-8") as f:
             data_dic=json.load(f)
