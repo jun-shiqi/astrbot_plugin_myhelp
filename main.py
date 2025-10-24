@@ -65,11 +65,17 @@ class MyPlugin(Star):
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("修改帮助")
     async def fix_help(self,event,hk:str,nhv:str):
+        from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
         data_dic={}
         with open(f"{DATA_DIR}","r",encoding="utf-8") as f:
             data_dic=json.load(f)
         
         if hk in data_dic:
+            massage_list=event.message_str
+            pattern = r'(?:\s.*?){2}(.*)'
+            help = re.search(pattern, massage_list)
+
+            massage=help.group(1)
             data_dic[hk]=nhv
             with open(f"{DATA_DIR}","w",encoding="utf-8") as f:
                 data_j=json.dumps(data_dic,ensure_ascii=False)
